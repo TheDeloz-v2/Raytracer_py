@@ -1,8 +1,38 @@
+import pygame
+
+OPAQUE = 0
+REFLECTIVE = 1
+TRANSPARENT = 2
+
 class Material:
-    def __init__(self, diffuse=(1, 1, 1), spec=1.0, ks=0.0):
+    def __init__(self, diffuse=(1, 1, 1), spec=1.0, ks=0.0, ior= 1.0,matType=OPAQUE, texture = None):
         self.diffuse = diffuse
         self.spec = spec
         self.ks = ks
+        self.ior = ior
+        self.matType = matType
+        self.texture = texture
+
+
+# Transparent materials
+def glass():
+    return Material(diffuse=(0.9, 0.9, 0.9), spec=64, ks=0.15, ior=1.5, matType=TRANSPARENT)
+
+def diamond():
+    return Material(diffuse=(0.6, 0.6, 0.9), spec=128, ks=0.20, ior=2.417, matType=TRANSPARENT)
+
+
+# Reflective materials
+def mirror():
+    return Material(diffuse=(0.9, 0.9, 0.9), spec=64, ks=0.1, matType=REFLECTIVE)
+
+def gold():
+    return Material(diffuse=(255/255,215/255,0), spec=128, ks=0.25, matType=REFLECTIVE)
+
+
+# Opaque materials
+def moon():
+    return Material(texture=pygame.image.load("textures/moon.jpg"))
         
 def brick():
     return Material(diffuse=(1, 0.3, 0.2), spec=8, ks=0.01)

@@ -1,11 +1,13 @@
 import mathbuddy as mb
+from math import tan, pi, atan2, acos
 
 class Intercept(object):
-  def __init__(self, distance, point, normal, obj):
+  def __init__(self, distance, point, normal, obj, texcoords):
     self.distance = distance
     self.point = point
     self.normal = normal
     self.obj = obj
+    self.texcoords = texcoords
 
 
 class Shape:
@@ -47,8 +49,12 @@ class Sphere(Shape):
       point = mb.add_vectors(origin, mb.multiply_ve(direction,t0))
       normal = mb.subtract_vectors(point, self.position)
       normal = mb.normalize(normal)
-
+      
+      u = (atan2(normal[2], normal[0]) / (2 * pi)+0.5)
+      v = acos(normal[1]) / pi
+      
       return Intercept(distance=t0,
                         point=point,
                         normal=normal,
+                        texcoords=(u, v),
                         obj=self)

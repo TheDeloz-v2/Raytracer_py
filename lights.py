@@ -1,7 +1,8 @@
 import mathbuddy as mb
+from math import acos, asin, sin, cos
 
 class Light:
-    def __init__(self, intensity=1, color=(1, 1, 1), lightType="Light"):
+    def __init__(self, intensity=1, color=(1, 1, 1), lightType="LIGHT"):
         self.intensity = intensity
         self.color = color
         self.type = lightType
@@ -16,25 +17,71 @@ class Light:
 
     def getSpecularColor(self, intercept, viewPosition):
         return None
-
+    
 
 class Ambient(Light):
     def __init__(self, intensity=1, color=(1, 1, 1)):
-        super().__init__(intensity, color, "Ambient")
+        super().__init__(intensity, color, "AMBIENT")
 
 
 def reflect(normal, direction):
-    dot = mb.dot_product(normal, direction)
-    scaled = mb.multiply_ve(normal, dot)
-    reflectValue = mb.multiply_ve(scaled, 2)
-    reflectValue = mb.subtract_vectors(reflectValue, direction)
+    reflectValue = mb.subtract_vectors(mb.multiply_ve(normal, 2 * mb.dot_product(normal, direction)), direction)
     return mb.normalize(reflectValue)
+
+def refract(normal, incident , n1, n2):
+    #Snell's Law
+    c1 = mb.dot_product(normal, incident)
+    if c1 < 0:
+        c1 = -c1
+    else:
+        normal = mb.negativeTuple(normal)
+        n1, n2 = n2, n1
+
+    n = n1 / n2
+
+    T = mb.subtract_vectors(mb.multiply_ve(mb.add_vectors(incident, mb.multiply_ve(normal, c1)), n) , mb.multiply_ve(normal, (1 - n **2 * (1-c1**2)) ** 0.5))
+    T = mb.normalize(T)
+    return T
+
+def fresnel(normal, incident,n1, n2):
+    c1 = mb.dot_product(normal, incident)
+
+    if c1 < 0:
+        c1 = -c1
+    else:
+        n1, n2 = n2, n1
+
+    s2 = (n1 * (1 - c1 ** 2) ** 0.5) / n2
+    c2 = (1 - s2 ** 2) ** 0.5
+
+    f1 = ((n2 * c1 - n1 * c2) / (n2 * c1 + n1 * c2)) ** 2
+    f2 = ((n1 * c2 - n2 * c1) / (n1 * c2 + n2 * c1)) ** 2
+
+    kr = (f1 + f2) / 2
+    kt = 1 - kr
+    return kr, kt
+
+def totalInternalReflection(incident, normal , n1, n2):
+    c1 = mb.dot_product(normal, incident)
+    if c1 < 0:
+        c1 = -c1
+    else:
+        normal = mb.negativeTuple(normal)
+        n1, n2 = n2, n1
+    
+    if n1 < n2:
+        return False
+    
+    theta1 = acos(c1)
+    thetaC = asin(n2/n1)
+
+    return theta1 >= thetaC
 
 
 class Directional(Light):
     def __init__(self, direction=(0, 1, 0), intensity=1, color=(1, 1, 1)):
-        super().__init__(intensity, color, "Directional")
-        self.direction =  mb.normalize(direction)
+        super().__init__(intensity, color, "DIRECTIONAL")
+        self.direction = mb.normalize(direction)
 
     def getDiffuseColor(self, intercept):
         direction = [i * -1 for i in self.direction]
@@ -51,7 +98,7 @@ class Directional(Light):
         reflectDirection = reflect(intercept.normal, direction)
 
         viewDirection = mb.subtract_vectors(viewPosition, intercept.point)
-        viewDirection =  mb.normalize(viewDirection)
+        viewDirection = mb.normalize(viewDirection)
 
         intensity = max(0, min(1, mb.dot_product(reflectDirection, viewDirection))) ** intercept.obj.material.spec
         intensity *= self.intensity
@@ -62,13 +109,13 @@ class Directional(Light):
 
 class Point(Light):
     def __init__(self, position=(0, 0, 0), intensity=1, color=(1, 1, 1)):
-        super().__init__(intensity, color, "Point")
+        super().__init__(intensity, color, "POINT")
         self.position = position
 
     def getDiffuseColor(self, intercept):
         direction = mb.subtract_vectors(self.position, intercept.point)
-        radius =  mb.normalize(direction)
-        direction = direction / radius
+        radius = mb.magVec(direction)
+        direction = mb.vectorDivEsc(direction, radius)
 
         intensity = mb.dot_product(intercept.normal, direction) * self.intensity
         intensity *= 1 - intercept.obj.material.ks
@@ -81,13 +128,13 @@ class Point(Light):
 
     def getSpecularColor(self, intercept, viewPosition):
         direction = mb.subtract_vectors(self.position, intercept.point)
-        radius = mb.normalize(direction)
-        direction = direction / radius
+        radius = mb.magVec(direction)
+        direction = mb.vectorDivEsc(direction, radius)
 
         reflectDirection = reflect(intercept.normal, direction)
 
         viewDirection = mb.subtract_vectors(viewPosition, intercept.point)
-        viewDirection =  mb.normalize(viewDirection)
+        viewDirection = mb.normalize(viewDirection)
 
         intensity = max(0, min(1, mb.dot_product(reflectDirection, viewDirection))) ** intercept.obj.material.spec
         intensity *= self.intensity

@@ -6,8 +6,8 @@ from lights import *
 from rt import Raytracer
 from materials import *
 
-width = 400
-height = 400
+width = 650
+height = 650
 
 pygame.init()
 
@@ -15,87 +15,55 @@ screen = pygame.display.set_mode((width, height), pygame.DOUBLEBUF | pygame.HWAC
 screen.set_alpha(None)
 
 rayTracer = Raytracer(screen)
+rayTracer.envMap = pygame.image.load('textures/space.bmp')
 rayTracer.rtClearColor(56/255, 75/255, 116/255)
 rayTracer.rtColor(1, 1, 1)
 
-def cuerpo():
-  rayTracer.scene.append(
-      Sphere(position=(0, -2, -7), radius=1.5, material=snow())
-  )
+# REFLECTIVE 1
+rayTracer.scene.append(
+    Sphere(position=(-2, 1, -5), radius=0.6, material=mirror())
+)
 
-  rayTracer.scene.append(
-      Sphere(position=(0, 0.2, -7), radius=1.3, material=snow())
-  )
+# OPAQUE 1
+rayTracer.scene.append(
+    Sphere(position=(0, 1, -5), radius=0.6, material=moon())
+)
 
-  rayTracer.scene.append(
-      Sphere(position=(0, 2.2, -7), radius=1, material=snow())
-  )
+# TRANSAPARENT 1
+rayTracer.scene.append(
+    Sphere(position=(2, 1, -5), radius=0.6, material=glass())
+)
 
-  rayTracer.scene.append(
-      Sphere(position=(0, -1.3, -5.6), radius=0.3, material=coal())
-  )
+# REFLECTIVE 2
+rayTracer.scene.append(
+    Sphere(position=(-2, -1, -5), radius=0.6, material=gold())
+)
 
-  rayTracer.scene.append(
-      Sphere(position=(0, -0.3, -5.8), radius=0.2, material=coal())
-  )
+# OPAQUE 2
+rayTracer.scene.append(
+    Sphere(position=(0, -1, -5), radius=0.6, material=water())
+)
 
-  rayTracer.scene.append(
-      Sphere(position=(0, 0.7, -5.8), radius=0.2, material=coal())
-  )
+# TRANSAPARENT 2
+rayTracer.scene.append(
+    Sphere(position=(2, -1, -5), radius=0.6, material=diamond())
+)
 
-def boca():
-  rayTracer.scene.append(
-      Sphere(position=(-0.12, 1.6, -6.2), radius=0.06, material=rock())
-  )
-
-  rayTracer.scene.append(
-      Sphere(position=(0.12, 1.6, -6.2), radius=0.06, material=rock())
-  )
-
-  rayTracer.scene.append(
-      Sphere(position=(-0.36, 1.7, -6.2), radius=0.06, material=rock())
-  )
-
-  rayTracer.scene.append(
-      Sphere(position=(0.36, 1.7, -6.2), radius=0.06, material=rock())
-  )
-
-def nariz():
-  rayTracer.scene.append(
-      Sphere(position=(0, 1.95, -6), radius=0.2, material=carrot())
-  )
-
-def ojos():
-  rayTracer.scene.append(
-      Sphere(position=(-0.2, 2.3, -6.1), radius=0.13, material=white())
-  )
-  
-  rayTracer.scene.append(
-      Sphere(position=(-0.2, 2.33, -6), radius=0.06, material=brilliant_black())
-  )
-
-  rayTracer.scene.append(
-      Sphere(position=(0.2, 2.3, -6.1), radius=0.13, material=white())
-  )
-  
-  rayTracer.scene.append(
-      Sphere(position=(0.2, 2.33, -6), radius=0.06, material=brilliant_black())
-  )
-
-cuerpo()
-boca()
-nariz()
-ojos()
-
+# Lights
 rayTracer.lights.append(
     Ambient(intensity=0.7)
 )
 rayTracer.lights.append(
     Directional(direction=(-1, -1.5, -2), intensity=0.3)
 )
+rayTracer.lights.append(
+    Point(position=(0, 0, -4.5), intensity=1, color=(0.2, 0.2, 0.2))
+)
+
+rayTracer.rtClear()
+rayTracer.rtRender()
 
 isRunning = True
-
 while isRunning:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -104,8 +72,8 @@ while isRunning:
             if event.key == pygame.K_ESCAPE:
                 isRunning = False
 
-    rayTracer.rtClear()
-    rayTracer.rtRender()
-    pygame.display.flip()
+rect = pygame.Rect(0, 0, width, height)
+sub = screen.subsurface(rect)
+pygame.image.save(sub, "outputs/output.png")
 
 pygame.quit()
