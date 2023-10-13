@@ -1,5 +1,5 @@
 import mathbuddy as mb
-from math import tan, pi, atan2, acos
+from math import tan, pi, atan2, acos, sqrt
 
 class Intercept(object):
   def __init__(self, distance, point, normal, obj, texcoords):
@@ -185,3 +185,87 @@ class Cube(Shape):
                             normal=intersect.normal,
                             texcoords=(u,v),
                             obj=self)
+        
+
+# Figure Cylinder, it can use the Disk class to create the top and bottom
+# The atributtes of the cylinder are the position, radius, height and material
+
+class Cylinder(Shape):
+    def __init__(self, position, radius, height, material):
+        super().__init__(position, material)
+        self.radius = radius
+        self.height = height
+
+        self.top = Disk(position=(position[0], position[1] + height / 2, position[2]),
+                        normal=(0, 1, 0),
+                        radius=radius,
+                        material=material)
+
+        self.bottom = Disk(position=(position[0], position[1] - height / 2, position[2]),
+                           normal=(0, -1, 0),
+                           radius=radius,
+                           material=material)
+
+    def intersect(self, origin, direction):
+        # Intersect with the top and bottom disks
+        top_intersect = self.top.intersect(origin, direction)
+        bottom_intersect = self.bottom.intersect(origin, direction)
+
+        # Intersect with the side surface
+        side_intersect = self.intersect_side(origin, direction)
+
+        # Determine the closest intersection
+        closest_intersect = None
+
+        if top_intersect is not None:
+            closest_intersect = top_intersect
+
+        if bottom_intersect is not None:
+            if closest_intersect is None or bottom_intersect.distance < closest_intersect.distance:
+                closest_intersect = bottom_intersect
+
+        if side_intersect is not None:
+            if closest_intersect is None or side_intersect.distance < closest_intersect.distance:
+                closest_intersect = side_intersect
+
+        return closest_intersect
+
+    def intersect_side(self, origin, direction):
+        a = direction[0] ** 2 + direction[2] ** 2
+        b = 2 * (direction[0] * (origin[0] - self.position[0]) + direction[2] * (origin[2] - self.position[2]))
+        c = (origin[0] - self.position[0]) ** 2 + (origin[2] - self.position[2]) ** 2 - self.radius ** 2
+
+        discriminant = b ** 2 - 4 * a * c
+
+        if discriminant < 0:
+            return None
+
+        t1 = (-b + sqrt(discriminant)) / (2 * a)
+        t2 = (-b - sqrt(discriminant)) / (2 * a)
+
+        if t1 > t2:
+            t1, t2 = t2, t1
+
+        # Check if the intersection points are within the height of the cylinder
+        y1 = origin[1] + t1 * direction[1]
+        y2 = origin[1] + t2 * direction[1]
+
+        if y1 > self.position[1] + self.height / 2 or y2 < self.position[1] - self.height / 2:
+            return None
+
+        t = t1 if y1 > self.position[1] - self.height / 2 and y1 < self.position[1] + self.height / 2 else t2
+
+        # Calculate the intersection point and normal
+        point = mb.add_vectors(origin, mb.multiply_ve(direction, t))
+        normal = [point[0] - self.position[0], 0, point[2] - self.position[2]]
+        normal = mb.normalize(normal)
+
+        # Calculate texture coordinates
+        u = 0.5 + atan2(normal[2], normal[0]) / (2 * pi)
+        v = 0.5 - (normal[1] - self.position[1] + self.height / 2) / self.height
+
+        return Intercept(distance=t,
+                         point=point,
+                         normal=normal,
+                         texcoords=(u, v),
+                         obj=self)

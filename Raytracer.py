@@ -6,8 +6,8 @@ from lights import *
 from rt import Raytracer
 from materials import *
 
-width = 650
-height = 650
+width = 450
+height = 450
 
 pygame.init()
 
@@ -19,24 +19,7 @@ rayTracer.envMap = pygame.image.load('textures/space.bmp')
 rayTracer.rtClearColor(56/255, 75/255, 116/255)
 rayTracer.rtColor(1, 1, 1)
 
-rayTracer.scene.append(
-    Cube(position=(-1.5, -0.75, -5), size=(1.5, 1.5, 1.5), material=cube())
-)
-rayTracer.scene.append(
-    Cube(position=(1.5, -0.75, -5), size=(1.5, 1.5, 1.5), material=cube())
-)
-rayTracer.scene.append(
-    Sphere(position=(0, 1.5, -10), radius=1.5, material=robot())
-)
-rayTracer.scene.append(
-    Disk(position=(0, 0.5, -11.9), normal=(0, 0, 1), radius=1.5, material=mirror())
-)
-rayTracer.scene.append(
-    Disk(position=(-2, 0.5, -5), normal=(1, 0, 0.2), radius=1, material=mirror())
-)
-rayTracer.scene.append(
-    Disk(position=(2, 0.5, -5), normal=(1, 0, -0.2), radius=1, material=mirror())
-)
+
 # Pared trasera
 rayTracer.scene.append(
     Plane(position=(0, 0, -12), normal=(0, 0, -1), material=wall2())
@@ -61,6 +44,12 @@ rayTracer.scene.append(
 rayTracer.scene.append(
     Plane(position=(0, 3, 0), normal=(0, -1, 0), material=brilliant_black())
 )
+
+# position, radius, height, material)
+rayTracer.scene.append(
+    Cylinder(position=(0, 0.2, -5), radius=1, height=1, material=moon())
+)
+
 
 # Lights
 rayTracer.lights.append(
@@ -87,6 +76,6 @@ while isRunning:
 """
 rect = pygame.Rect(0, 0, width, height)
 sub = screen.subsurface(rect)
-pygame.image.save(sub, "outputs/output2.png")
+pygame.image.save(sub, "outputs/output3.png")
 
 pygame.quit()
