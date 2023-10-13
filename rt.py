@@ -1,11 +1,10 @@
 import mathbuddy as mb
 from math import pi, tan, atan2, acos
-import numpy as np
 import pygame
 from materials import *
 import lights
 
-MAX_RECURSION_DEPTH = 3
+MAX_RECURSION_DEPTH = 4
 
 class Raytracer(object):
     def __init__(self, screen):
@@ -103,8 +102,8 @@ class Raytracer(object):
         material = intercept.obj.material
         surfaceColor = material.diffuse
         if material.texture and intercept.texcoords:
-            tx = int(intercept.texcoords[0] * material.texture.get_width())
-            ty = int(intercept.texcoords[1] * material.texture.get_height())
+            tx = int(intercept.texcoords[0] * material.texture.get_width()-1)
+            ty = int(intercept.texcoords[1] * material.texture.get_height()-1)
             texColor = material.texture.get_at((tx, ty))
             texColor = [i / 255 for i in texColor]
             surfaceColor = [surfaceColor[i] * texColor[i] for i in range(3)]

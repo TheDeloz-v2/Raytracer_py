@@ -60,3 +60,18 @@ def white():
 
 def brilliant_black():
     return Material(diffuse=(0, 0, 0), spec=256, ks=0.5)
+
+def wall2():
+    return Material(diffuse=(0.8, 0.8, 0.8), spec=32, ks=0.2)
+
+def floor():
+    return Material(diffuse=(0.3, 0.3, 0.3), spec=32, ks=0.5, matType=REFLECTIVE)
+
+def wall():
+    return Material(diffuse=(0.7, 0.7, 0.7), spec=32, ks=0.2)
+
+def cube():
+    return Material(texture=pygame.image.load("textures/cube.jpg"))
+
+def robot():
+    return Material(texture=pygame.image.load("textures/robot.png"))
