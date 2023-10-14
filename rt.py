@@ -96,7 +96,7 @@ class Raytracer(object):
             
             else:
                 color = self.clearColor
-                return [envColor[i]/255 for i in range(3)]
+                return [i/255 for i in self.clearColor]
                 
 
         material = intercept.obj.material
@@ -104,7 +104,13 @@ class Raytracer(object):
         if material.texture and intercept.texcoords:
             tx = int(intercept.texcoords[0] * material.texture.get_width()-1)
             ty = int(intercept.texcoords[1] * material.texture.get_height()-1)
-            texColor = material.texture.get_at((tx, ty))
+            if tx >= material.texture.get_width() or ty >= material.texture.get_height() or tx < 0 or ty < 0:
+                texColor = [0,0,0]
+            else:
+                try:
+                    texColor = material.texture.get_at((tx, ty))
+                except:
+                    print(tx,ty)
             texColor = [i / 255 for i in texColor]
             surfaceColor = [surfaceColor[i] * texColor[i] for i in range(3)]
 

@@ -16,7 +16,7 @@ class Material:
 
 # Transparent materials
 def glass():
-    return Material(diffuse=(0.9, 0.9, 0.9), spec=64, ks=0.15, ior=1.5, matType=TRANSPARENT)
+    return Material(diffuse=(0.9, 0.9, 0.9), spec=128, ks=0.20, ior=2.417, matType=TRANSPARENT)
 
 def diamond():
     return Material(diffuse=(0.6, 0.6, 0.9), spec=128, ks=0.20, ior=2.417, matType=TRANSPARENT)
@@ -65,7 +65,7 @@ def wall2():
     return Material(diffuse=(0.8, 0.8, 0.8), spec=32, ks=0.2)
 
 def floor():
-    return Material(diffuse=(0.3, 0.3, 0.3), spec=32, ks=0.5, matType=REFLECTIVE)
+    return Material(diffuse=(0.6, 0.6, 0.6), spec=32, ks=0.5, matType=REFLECTIVE)
 
 def wall():
     return Material(diffuse=(0.7, 0.7, 0.7), spec=32, ks=0.2)

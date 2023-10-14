@@ -5,6 +5,12 @@ import math
 def dot_product(v1, v2):
     return sum((a * b) for a, b in zip(v1, v2))
 
+# Funcion de operacion cruz entre dos vectores
+def cross_product(v1, v2):
+    return [v1[1] * v2[2] - v1[2] * v2[1],
+            v1[2] * v2[0] - v1[0] * v2[2],
+            v1[0] * v2[1] - v1[1] * v2[0]]
+    
 # Funcion de operacion resta entre dos vectores de cualquier dimension
 def subtract_vectors(v1, v2):
     return [x - y for x, y in zip(v1, v2)]
@@ -39,3 +45,13 @@ def magVec(v):
 def vectorDivEsc(v, s):
     result = [x / s for x in v]
     return result
+
+# Function to get the mean of a vector
+def meanVec(v):
+    rows = len(v)
+    columns = len(v[0])
+
+    column_sums = [sum(row[i] for row in v) for i in range(columns)]
+    meanColumns = [column_sum / rows for column_sum in column_sums]
+
+    return meanColumns

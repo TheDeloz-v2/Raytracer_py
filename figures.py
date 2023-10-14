@@ -189,7 +189,6 @@ class Cube(Shape):
 
 # Figure Cylinder, it can use the Disk class to create the top and bottom
 # The atributtes of the cylinder are the position, radius, height and material
-
 class Cylinder(Shape):
     def __init__(self, position, radius, height, material):
         super().__init__(position, material)
@@ -269,3 +268,105 @@ class Cylinder(Shape):
                          normal=normal,
                          texcoords=(u, v),
                          obj=self)
+        
+
+# Figure Triangle
+# The atributtes of the triangle are the vertices and material
+class Triangle(Shape):
+    def __init__(self, vertices, material):
+        super().__init__(position=vertices[0], material=material)
+        self.vertices = vertices
+
+    def intersect(self, origin, direction):
+        v0, v1, v2 = self.vertices
+
+        edge1 = mb.subtract_vectors(v1, v0)
+        edge2 = mb.subtract_vectors(v2, v0)
+        edge_cross = mb.cross_product(edge1, edge2)
+        normal = mb.normalize(edge_cross)
+
+        d = mb.dot_product(normal, v0)
+
+        denominator = mb.dot_product(normal, direction)
+        if abs(denominator) < 0.0001:
+            return None
+
+        t = (d - mb.dot_product(normal, origin)) / denominator
+        if t < 0:
+            return None
+
+        point = mb.add_vectors(origin, mb.multiply_ve(direction, t))
+
+        edge0 = mb.subtract_vectors(v0, v2)
+        if mb.dot_product(normal, mb.cross_product(edge0, mb.subtract_vectors(point, v2))) < 0:
+            return None
+
+        edge1 = mb.subtract_vectors(v1, v0)
+        if mb.dot_product(normal, mb.cross_product(edge1, mb.subtract_vectors(point, v0))) < 0:
+            return None
+
+        edge2 = mb.subtract_vectors(v2, v1)
+        if mb.dot_product(normal, mb.cross_product(edge2, mb.subtract_vectors(point, v1))) < 0:
+            return None
+
+        c0 = mb.dot_product(edge0, mb.subtract_vectors(point, v2))
+        c1 = mb.dot_product(edge1, mb.subtract_vectors(point, v0))
+        c2 = mb.dot_product(edge2, mb.subtract_vectors(point, v1))
+        total = c0 + c1 + c2
+        u = c1 / total
+        v = c2 / total
+
+        return Intercept(distance=t,
+                         point=point,
+                         normal=normal,
+                         texcoords=(u, 1-v),
+                         obj=self)
+        
+
+# Figure Pyramid, it can use the Triangle class to create the sides
+# The atributtes of the pyramid are the position, width, height, lenght and material
+class Pyramid(Shape):
+    def __init__(self, position, width, height, lenght, material):
+        super().__init__(position=position, material=material)
+        self.width = width
+        self.height = height
+        self.lenght = lenght
+
+    def intersect(self, origin, direction):
+
+        v0 = (-self.width / 2, 0, -self.lenght / 2)
+        v1 = (-self.width / 2, 0, self.lenght / 2)
+        v2 = (self.width / 2, 0, self.lenght / 2)
+        v3 = (self.width / 2, 0, -self.lenght / 2)
+
+        apex = (0, self.height, 0)
+
+        v0 = mb.add_vectors(v0, self.position)
+        v1 = mb.add_vectors(v1, self.position)
+        v2 = mb.add_vectors(v2, self.position)
+        v3 = mb.add_vectors(v3, self.position)
+        apex = mb.add_vectors(apex, self.position)
+
+        triangles = []
+        triangles.append(Triangle((v0, v1, v2), self.material))
+        triangles.append(Triangle((v0, v2, v3), self.material))
+
+        triangles.append(Triangle((v0, v1, apex), self.material))
+        triangles.append(Triangle((v1, v2, apex), self.material))
+        triangles.append(Triangle((v2, v3, apex), self.material))
+        triangles.append(Triangle((v3, v0, apex), self.material))
+
+        closestIntercept = None
+        for triangle in triangles:
+            intercept = triangle.intersect(origin, direction)
+            if intercept is not None:
+                if closestIntercept is None or intercept.distance < closestIntercept.distance:
+                    closestIntercept = intercept
+
+        if closestIntercept:
+            return Intercept(distance=closestIntercept.distance,
+                            point=closestIntercept.point,
+                            normal=closestIntercept.normal,
+                            texcoords=closestIntercept.texcoords,
+                            obj=self)
+        return None
