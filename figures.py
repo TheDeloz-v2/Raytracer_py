@@ -195,79 +195,46 @@ class Cylinder(Shape):
         self.radius = radius
         self.height = height
 
-        self.top = Disk(position=(position[0], position[1] + height / 2, position[2]),
-                        normal=(0, 1, 0),
-                        radius=radius,
-                        material=material)
-
-        self.bottom = Disk(position=(position[0], position[1] - height / 2, position[2]),
-                           normal=(0, -1, 0),
-                           radius=radius,
-                           material=material)
-
     def intersect(self, origin, direction):
-        # Intersect with the top and bottom disks
-        top_intersect = self.top.intersect(origin, direction)
-        bottom_intersect = self.bottom.intersect(origin, direction)
+        L = mb.subtract_vectors(origin, self.position)
+        a = direction[0] * direction[0] + direction[2] * direction[2]
+        b = 2 * (L[0] * direction[0] + L[2] * direction[2])
+        c = L[0] * L[0] + L[2] * L[2] - self.radius * self.radius
 
-        # Intersect with the side surface
-        side_intersect = self.intersect_side(origin, direction)
-
-        # Determine the closest intersection
-        closest_intersect = None
-
-        if top_intersect is not None:
-            closest_intersect = top_intersect
-
-        if bottom_intersect is not None:
-            if closest_intersect is None or bottom_intersect.distance < closest_intersect.distance:
-                closest_intersect = bottom_intersect
-
-        if side_intersect is not None:
-            if closest_intersect is None or side_intersect.distance < closest_intersect.distance:
-                closest_intersect = side_intersect
-
-        return closest_intersect
-
-    def intersect_side(self, origin, direction):
-        a = direction[0] ** 2 + direction[2] ** 2
-        b = 2 * (direction[0] * (origin[0] - self.position[0]) + direction[2] * (origin[2] - self.position[2]))
-        c = (origin[0] - self.position[0]) ** 2 + (origin[2] - self.position[2]) ** 2 - self.radius ** 2
-
-        discriminant = b ** 2 - 4 * a * c
+        discriminant = b * b - 4 * a * c
 
         if discriminant < 0:
             return None
 
-        t1 = (-b + sqrt(discriminant)) / (2 * a)
-        t2 = (-b - sqrt(discriminant)) / (2 * a)
+        t1 = (-b - sqrt(discriminant)) / (2 * a)
+        t2 = (-b + sqrt(discriminant)) / (2 * a)
 
         if t1 > t2:
             t1, t2 = t2, t1
 
-        # Check if the intersection points are within the height of the cylinder
-        y1 = origin[1] + t1 * direction[1]
-        y2 = origin[1] + t2 * direction[1]
+        y1 = L[1] + t1 * direction[1]
+        y2 = L[1] + t2 * direction[1]
 
-        if y1 > self.position[1] + self.height / 2 or y2 < self.position[1] - self.height / 2:
+        if (y1 < 0 and y2 < 0) or (y1 > self.height and y2 > self.height):
             return None
 
-        t = t1 if y1 > self.position[1] - self.height / 2 and y1 < self.position[1] + self.height / 2 else t2
-
-        # Calculate the intersection point and normal
+        t = t1 if 0 <= y1 <= self.height else t2
         point = mb.add_vectors(origin, mb.multiply_ve(direction, t))
-        normal = [point[0] - self.position[0], 0, point[2] - self.position[2]]
-        normal = mb.normalize(normal)
 
-        # Calculate texture coordinates
-        u = 0.5 + atan2(normal[2], normal[0]) / (2 * pi)
-        v = 0.5 - (normal[1] - self.position[1] + self.height / 2) / self.height
+        if 0 <= y1 <= self.height:
+            normal = mb.normalize(mb.subtract_vectors(point, mb.add_vectors(self.position, (0, 0, 0))))
+        else:
+            normal = mb.normalize(mb.subtract_vectors(point, mb.add_vectors(self.position, (0, self.height, 0))))
 
-        return Intercept(distance=t,
-                         point=point,
-                         normal=normal,
-                         texcoords=(u, v),
-                         obj=self)
+        return Intercept(distance=t, point=point, normal=normal, texcoords=None, obj=self)
+
+    def normal(self, point):
+        if point[1] <= 0:
+            return mb.normalize(mb.subtract_vectors(point, mb.add_vectors(self.position, (0, 0, 0))))
+        elif point[1] >= self.height:
+            return mb.normalize(mb.subtract_vectors(point, mb.add_vectors(self.position, (0, self.height, 0))))
+        else:
+            return mb.normalize(mb.subtract_vectors(point, mb.add_vectors(self.position, (0, point[1], 0))))
         
 
 # Figure Triangle

@@ -21,6 +21,15 @@ def glass():
 def diamond():
     return Material(diffuse=(0.6, 0.6, 0.9), spec=128, ks=0.20, ior=2.417, matType=TRANSPARENT)
 
+def ruby():
+    return Material(diffuse=(0.9, 0.1, 0.1), spec=128, ks=0.20, ior=1.77, matType=TRANSPARENT)
+
+def esmerald():
+    return Material(diffuse=(0.1, 0.9, 0.1), spec=128, ks=0.20, ior=1.58, matType=TRANSPARENT)
+
+def sapphire():
+    return Material(diffuse=(0.1, 0.1, 0.9), spec=128, ks=0.20, ior=1.77, matType=TRANSPARENT)
+
 
 # Reflective materials
 def mirror():
@@ -28,6 +37,9 @@ def mirror():
 
 def gold():
     return Material(diffuse=(255/255,215/255,0), spec=128, ks=0.25, matType=REFLECTIVE)
+
+def floor():
+    return Material(diffuse=(0.6, 0.6, 0.6), spec=32, ks=0.5, matType=REFLECTIVE)
 
 
 # Opaque materials
@@ -64,9 +76,6 @@ def brilliant_black():
 def wall2():
     return Material(diffuse=(0.8, 0.8, 0.8), spec=32, ks=0.2)
 
-def floor():
-    return Material(diffuse=(0.6, 0.6, 0.6), spec=32, ks=0.5, matType=REFLECTIVE)
-
 def wall():
     return Material(diffuse=(0.7, 0.7, 0.7), spec=32, ks=0.2)
 
@@ -75,3 +84,12 @@ def cube():
 
 def robot():
     return Material(texture=pygame.image.load("textures/robot.png"))
+
+def pokeball():
+    return Material(texture=pygame.image.load("textures/pokeball.jpg"))
+
+def table():
+    return Material(diffuse=(95/255, 134/255, 92/255), spec=32, ks=0.2)
+
+def metal():
+    return Material(diffuse=(72/255, 77/255, 72/255), spec=64, ks=0.5)
